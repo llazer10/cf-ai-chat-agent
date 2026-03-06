@@ -63,41 +63,17 @@ If the user asks to schedule a task, use the schedule tool to schedule the task.
         // MCP tools from connected servers
         ...mcpTools,
 
-        // Client-side tool: no execute function — the browser handles it
-        getUserTimezone: tool({
-          description:
-            "Get the user's timezone from their browser. Use this when you need to know the user's local time.",
-          inputSchema: z.object({})
-        }),
-
-        // Approval tool: requires user confirmation before executing
-        calculate: tool({
-          description:
-            "Perform a math calculation with two numbers. Requires user approval for large numbers.",
+        getGameRecommendations: tool({
+          description: "Recommend video games based on genre",
           inputSchema: z.object({
-            a: z.number().describe("First number"),
-            b: z.number().describe("Second number"),
-            operator: z
-              .enum(["+", "-", "*", "/", "%"])
-              .describe("Arithmetic operator")
+            genre: z.string(),
+            platform: z.string().optional()
           }),
-          needsApproval: async ({ a, b }) =>
-            Math.abs(a) > 1000 || Math.abs(b) > 1000,
-          execute: async ({ a, b, operator }) => {
-            const ops: Record<string, (x: number, y: number) => number> = {
-              "+": (x, y) => x + y,
-              "-": (x, y) => x - y,
-              "*": (x, y) => x * y,
-              "/": (x, y) => x / y,
-              "%": (x, y) => x % y
-            };
-            if (operator === "/" && b === 0) {
-              return { error: "Division by zero" };
-            }
-            return {
-              expression: `${a} ${operator} ${b}`,
-              result: ops[operator](a, b)
-            };
+          execute: async ({ genre, platform }) => {
+            return [
+              { name: "Elden Ring", genre: "RPG", platform: "PC/Console" },
+              { name: "Hades", genre: "Roguelike", platform: "PC/Switch" }
+            ];
           }
         }),
 
