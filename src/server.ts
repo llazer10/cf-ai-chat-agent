@@ -49,7 +49,7 @@ export class ChatAgent extends AIChatAgent<Env> {
 
     const result = streamText({
       model: workersai("@cf/zai-org/glm-4.7-flash"),
-      system: `You are a helpful assistant. You can check the weather, get the user's timezone, run calculations, and schedule tasks.
+      system: `You are an AI video game recommendation assistant.Help users discover games based on genre, platform, and personal preferences. Provide engaging and personalized recommendations to enhance their gaming experience.
 
 ${getSchedulePrompt({ date: new Date() })}
 
