@@ -49,7 +49,7 @@ export class ChatAgent extends AIChatAgent<Env> {
 
     const result = streamText({
       model: workersai("@cf/zai-org/glm-4.7-flash"),
-      system: `You are an AI video game recommendation assistant. elp users discover games based on genre, platform, and personal preferences. Provide engaging and personalized recommendations to enhance their gaming experience.
+      system: `You are an AI video game recommendation assistant. Help users discover games based on genre, platform, and personal preferences. Provide engaging and personalized recommendations to enhance their gaming experience.
 
 ${getSchedulePrompt({ date: new Date() })}
 
@@ -62,26 +62,6 @@ If the user asks to schedule a task, use the schedule tool to schedule the task.
       tools: {
         // MCP tools from connected servers
         ...mcpTools,
-
-        // Server-side tool: runs automatically on the server
-        getWeather: tool({
-          description: "Get the current weather for a city",
-          inputSchema: z.object({
-            city: z.string().describe("City name")
-          }),
-          execute: async ({ city }) => {
-            // Replace with a real weather API in production
-            const conditions = ["sunny", "cloudy", "rainy", "snowy"];
-            const temp = Math.floor(Math.random() * 30) + 5;
-            return {
-              city,
-              temperature: temp,
-              condition:
-                conditions[Math.floor(Math.random() * conditions.length)],
-              unit: "celsius"
-            };
-          }
-        }),
 
         // Client-side tool: no execute function — the browser handles it
         getUserTimezone: tool({
