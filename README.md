@@ -1,6 +1,6 @@
 # Game Recommender agent
 
-This is my optional assignment AI-powered video game recommendation assistant built using Cloudflare Workers AI and the Agents SDK.
+This is my assignment AI-powered video game recommendation assistant built using Cloudflare Workers AI and the Agents SDK.
 
 This project helps users discover video games based on their:
 - preferred genre
