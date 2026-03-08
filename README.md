@@ -1,6 +1,6 @@
 # Game Recommender agent
 
-An AI-powered video game recommendation assistant built using Cloudflare Workers AI and the Agents SDK.
+This is my optional assignment AI-powered video game recommendation assistant built using Cloudflare Workers AI and the Agents SDK.
 
 This project helps users discover video games based on their:
 - preferred genre
@@ -32,8 +32,15 @@ Try these prompts to see the different features:
 
 1. searchRealGames
 This tool queries the RAWG video game database to fetch real games based on a genre and optional platform.
-Example API call:
-https://api.rawg.io/api/games
+
+To run this project yourself you need your own RAWG API key or any other game database API key.
+(1). Create a free acount at the RAWG website: https://rawg.io
+(2). Generate the API Key
+(3). Add the API key to your Cloudflare Worker as a secret:
+                wrangler secret put RAWG_API_KEY
+
+This stores the key securely in Cloudflare so it is not exposed in the GitHub repository.
+
 
 The tool returns:
 
