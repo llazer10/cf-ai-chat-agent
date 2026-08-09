@@ -1,110 +1,93 @@
-# Game Recommender agent
+# Game Recommender Agent
 
-This is my assignment AI-powered video game recommendation assistant built using Cloudflare Workers AI and the Agents SDK.
+A conversational video-game recommender built on Cloudflare Workers AI and the Agents SDK. It streams responses from `@cf/zai-org/glm-4.7-flash`, can query RAWG for current game records, and offers built-in recommendations by genre, PC performance, or play style.
 
-This project helps users discover video games based on their:
-- preferred genre
-- gaming platform
-- PC performance
-- personality/playstyle
+## What it does
 
-The agent combines AI reasoning with tool-based APIs to generate intelligent recommendations.
+- Searches RAWG by genre and optional platform, returning up to five highly rated results
+- Maps common phrases such as “open world” and “sci-fi” to RAWG genre slugs
+- Provides built-in recommendation tools for genre/platform, low- or high-end PCs, and five play-style categories
+- Streams chat responses through an `AIChatAgent`
+- Stores each agent instance in a SQLite-backed Durable Object configured as `ChatAgent`
+- Supports adding and removing MCP servers, including the OAuth callback flow exposed by the Agents SDK
+- Includes a React/Kumo chat UI with light/dark themes, connection state, tool output, reasoning panels, debug JSON, stop, and clear-history controls
 
-## Quick start
+## Architecture
 
-Install dependicies and do the following
+```text
+React + Kumo UI
+      │
+      │ Agents SDK WebSocket/chat protocol
+      ▼
+ChatAgent (AIChatAgent / Durable Object)
+      ├─ Workers AI: @cf/zai-org/glm-4.7-flash
+      ├─ RAWG API tool
+      ├─ local recommendation tools
+      └─ tools from connected MCP servers
+```
+
+`routeAgentRequest()` handles Agents SDK and OAuth requests. Cloudflare's asset configuration serves the single-page app and runs the Worker first for `/agents/*` and `/oauth/*`.
+
+## Prerequisites
+
+- Node.js and npm
+- A Cloudflare account with Wrangler authenticated
+- A [RAWG](https://rawg.io/apidocs) API key for `searchRealGames`
+
+## Local development
+
 ```bash
+git clone https://github.com/llazer10/cf_ai_game_agent.git
+cd cf_ai_game_agent
 npm install
-cd agents-starter
-npm install
+npx wrangler login
+```
+
+Create a local `.dev.vars` file (it is ignored by Git):
+
+```dotenv
+RAWG_API_KEY=your_rawg_api_key
+```
+
+Then start the Vite/Workers development server:
+
+```bash
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) to see your agent in action.
+Open the local URL printed by Vite (normally `http://localhost:5173`). The Workers AI binding is configured with `remote: true`, so local AI inference uses the remote Cloudflare binding and requires Cloudflare authentication/network access.
 
-Try these prompts to see the different features:
+Example prompts:
 
-- **"What are some good co-op games for PC?"** — server-side tool (runs automatically)
-- **"What games would you recommend for my PC specs?"** — client-side tool (browser provides the answer)
-- **"I'm in the mood for a story-rich game, any suggestions?"** — approval tool (asks you before running)
+- `Recommend highly rated RPGs for PC.`
+- `What should I play on a low-end PC?`
+- `I like relaxed games—what would fit me?`
 
-## Tools implemented
+## Useful scripts
 
-1. searchRealGames
-This tool queries the RAWG video game database to fetch real games based on a genre and optional platform.
-
-To use this tool yourself you need your own RAWG API key or any other game database API key.
-(1). Create a free acount at the RAWG website: https://rawg.io
-(2). Generate the API Key
-(3). Add the API key to your Cloudflare Worker as a secret:
-                wrangler secret put RAWG_API_KEY
-
-This stores the key securely in Cloudflare so it is not exposed in the GitHub repository.
-
-
-The tool returns:
-
-game name
-rating
-release date
-supported platforms
-To improve reliability, a genre mapping system converts user-friendly genres (like "open world" or "sci-fi") into RAWG-compatible genre slugs.
-
-2. gamePerformanceRecommendation
-Recommends games depending on the performance capability of a user's PC.
-
-Supported categories:
-low-end PCs
-high-end PCs
-
-3. personalityGameRecommendation
-Recommends games based on the player's personality or preferred playstyle.
-
-Supported playstyles:
-competitive
-relaxed
-story lover
-explorer
-strategist
-
-4. gpuGameRecommendation
-Detects GPU models such as:
-
-RTX 3070
-RTX 4090
-GTX 1060
-and recommends games suitable for those hardware capabilities.
-
-## Project structure
-
-```
-src/
-  server.ts    # Game agent with tools
-  app.tsx      # Chat UI built with Kumo components
-  client.tsx   # React entry point
-  styles.css   # Tailwind + Kumo styles
-```
-
-## What's included
-
-- **AI Powered game recommendations**
-- **Three tool patterns** — server-side auto-execute, client-side (browser), and human-in-the-loop approval
-- **Scheduling** — one-time, delayed, and recurring (cron) tasks
-- **Reasoning display** — shows model thinking as it streams, collapses when done
-- **Debug mode** — toggle in the header to inspect raw message JSON for each message
-- **Kumo UI** — Cloudflare's design system with dark/light mode
-- **Real-time** — WebSocket connection with automatic reconnection and message persistence
-
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start local development |
+| `npm run check` | Check formatting, lint TypeScript, and type-check |
+| `npm run types` | Regenerate Wrangler binding types |
+| `npm run deploy` | Build the frontend and deploy with Wrangler |
 
 ## Deploy
 
+Authenticate Wrangler, configure the production RAWG secret, and deploy:
+
 ```bash
+npx wrangler login
+npx wrangler secret put RAWG_API_KEY
 npm run deploy
 ```
 
-Your agent is live on Cloudflare's global network. Messages persist in SQLite, streams resume on disconnect, and the agent hibernates when idle.
+`wrangler.jsonc` defines the Worker name, Workers AI binding, static assets, `ChatAgent` Durable Object, SQLite migration, and observability. Deployment requires a Cloudflare account configured for these resources. This repository alone does not establish that a production deployment is currently live.
 
+## Security
+
+Keep `RAWG_API_KEY` out of source control. Use `.dev.vars` locally and a Wrangler secret for deployed environments; do not place the key in `wrangler.jsonc` or client-side code.
 
 ## License
 
-MIT
+MIT. See [`LICENSE`](LICENSE). The current license notice is Copyright © 2025 Cloudflare Inc.
